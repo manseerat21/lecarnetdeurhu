@@ -1,0 +1,46 @@
+:root {
+  --urhu-card-color: #283328;        /* forest green */
+  --urhu-card-text-color: #e4f0e6;   /* soft mint */
+}
+
+.urhu-section {
+  color: var(--urhu-card-text-color);
+}
+
+.urhu-section h1 {
+  font-size: 1.7rem;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  margin-bottom: 0.6rem;
+}
+
+/* base card */
+
+.card {
+  background: rgba(9, 20, 9, 0.9);
+  border-radius: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(210, 238, 221, 0.16);
+  margin-bottom: 1rem;
+  box-shadow: 0 16px 26px rgba(0, 0, 0, 0.35);
+}
+
+.card--light {
+  background: rgba(223, 239, 229, 0.1);
+}
+
+.card h2 {
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+  text-transform: lowercase;
+  color: #e9f7ed;
+  letter-spacing: 0.12em;
+}
+
+.card ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.93rem;
+  line-height: 1.7;
+  color: #d9eee3;
+}

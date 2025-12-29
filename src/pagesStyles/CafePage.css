@@ -1,0 +1,156 @@
+:root {
+  --cafe-card-color: #5b1c26;        /* deep maroon */
+  --cafe-card-text-color: #f9ebe3;   /* warm off-white */
+}
+
+.cafe-section {
+  color: var(--cafe-card-text-color);
+}
+
+.cafe-section h1 {
+  text-transform: lowercase;
+  font-size: 1.7rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.6rem;
+}
+
+.cafe-layout {
+  margin-top: 1.4rem;
+  border-radius: 1.2rem;
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+}
+
+@media (min-width: 900px) {
+  .cafe-layout {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  }
+}
+
+.cafe-ambient {
+  min-height: 190px;
+  border-radius: 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent),
+    rgba(9, 9, 12, 0.72);
+  padding: 1rem 1.1rem;
+}
+
+.ambient-title {
+  font-size: 0.85rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  margin-bottom: 0.4rem;
+}
+
+.ambient-body {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: rgba(249, 235, 227, 0.9);
+}
+
+.cafe-small {
+  font-size: 0.8rem;
+  color: rgba(249, 235, 227, 0.75);
+}
+
+.cafe-widgets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* sticky note */
+
+.sticky-note {
+  background: #f6e2a4;
+  color: #3a2c15;
+  border-radius: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  box-shadow: 0 16px 26px rgba(0, 0, 0, 0.45);
+}
+
+.sticky-note h2 {
+  font-size: 0.95rem;
+  margin-bottom: 0.35rem;
+  text-transform: lowercase;
+}
+
+.sticky-note textarea {
+  width: 100%;
+  min-height: 90px;
+  border: none;
+  resize: vertical;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: inherit;
+}
+
+.sticky-note textarea:focus {
+  outline: none;
+}
+
+.sticky-hint {
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  opacity: 0.75;
+}
+
+/* pomodoro */
+
+.pomodoro {
+  background: rgba(9, 9, 13, 0.9);
+  border-radius: 0.9rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.pomodoro h2 {
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+  text-transform: lowercase;
+  color: #fbe6d5;
+}
+
+.pomodoro-time {
+  font-size: 1.9rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.55rem;
+}
+
+.pomodoro-controls {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.pomodoro-controls button {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-transform: lowercase;
+}
+
+.pomodoro-controls button:nth-child(1) {
+  background: #22c55e;
+  color: #02140a;
+}
+
+.pomodoro-controls button:nth-child(2) {
+  background: #f97316;
+  color: #1b0c02;
+}
+
+.pomodoro-controls button:nth-child(3) {
+  background: #e5e7eb;
+  color: #111827;
+}
