@@ -20,7 +20,7 @@ const LABELS = {
   urhu: "urhu",
 };
 
-function FileStack({ pages }) {
+function FileStack({ pages, onActiveChange }) {
   // initial order = order given by App
   const [order, setOrder] = useState(() => pages.map((p) => p.key));
 
@@ -29,7 +29,14 @@ function FileStack({ pages }) {
   const bringToFront = (key) => {
     setOrder((prev) => {
       const without = prev.filter((k) => k !== key);
-      return [...without, key];
+      const nextOrder = [...without, key];
+
+      // tell App which page is now on top
+      if (onActiveChange) {
+        onActiveChange(key);
+      }
+
+      return nextOrder;
     });
   };
 
@@ -54,6 +61,7 @@ function FileStack({ pages }) {
               "--cardWidth": DEFAULT_WIDTH,
               "--cardColor": `var(--${key}-card-color)`,
               "--cardTextColor": `var(--${key}-card-text-color)`,
+              "--cardBackground": `var(--${key}-card-background, var(--${key}-card-color))`,
               "--tabOffset": tabOffset,
             }}
             onClick={() => bringToFront(key)}

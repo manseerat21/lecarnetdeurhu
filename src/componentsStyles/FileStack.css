@@ -10,10 +10,12 @@
   top: 0;
   left: 0;
   height: 100%;
-
   width: calc((var(--cardWidth)) - var(--tabWidth));
 
-  background: var(--cardColor);
+  background: var(--cardBackground, var(--cardColor));
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: var(--cardTextColor);
 
   border-radius: 0 14px 14px 0;
@@ -36,10 +38,13 @@
 
 .file-main {
   height: 100%;
-  padding: 32px calc(var(--tabWidth) + 32px) 32px 32px;
   overflow-y: auto;
-  color: var(--cardTextColor);
   box-sizing: border-box;
+  scrollbar-width: none;
+}
+
+.file-main::-webkit-scrollbar {
+  display: none;
 }
 
 .file-label {

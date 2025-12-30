@@ -1,10 +1,13 @@
 :root {
   --urhu-card-color: #283328;        /* forest green */
   --urhu-card-text-color: #e4f0e6;   /* soft mint */
+  --page-horizontal-padding: 32px;
 }
 
 .urhu-section {
   color: var(--urhu-card-text-color);
+  padding: 32px calc(var(--page-horizontal-padding) + var(--tabWidth, 35px))
+    32px var(--page-horizontal-padding);
 }
 
 .urhu-section h1 {

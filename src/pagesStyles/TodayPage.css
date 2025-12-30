@@ -1,11 +1,14 @@
 :root {
   --today-card-color: #f3e7d6;        /* warm cream */
   --today-card-text-color: #271b14;   /* ink brown */
+  --page-horizontal-padding: 32px;
 }
 
 /* scope */
 .today-section {
   color: var(--today-card-text-color);
+  padding: 32px calc(var(--page-horizontal-padding) + var(--tabWidth, 35px))
+    32px var(--page-horizontal-padding);
 }
 
 .today-header h1 {

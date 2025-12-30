@@ -1,10 +1,14 @@
 :root {
   --moon-card-color: #dde3f0;        /* pale blue-gray */
-  --moon-card-text-color: #202633;   /* inky navy */
+  --moon-card-text-color: #cddbff;   /* soft moonlit ice-blue */
+  --page-horizontal-padding: 32px;
+  --moon-card-background: url('../assets/moon-wallpaper.gif');
 }
 
 .moon-section {
   color: var(--moon-card-text-color);
+  padding: 32px calc(var(--page-horizontal-padding) + var(--tabWidth, 35px))
+    32px var(--page-horizontal-padding);
 }
 
 .moon-section h1 {

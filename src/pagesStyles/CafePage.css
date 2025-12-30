@@ -1,10 +1,13 @@
 :root {
   --cafe-card-color: #5b1c26;        /* deep maroon */
   --cafe-card-text-color: #f9ebe3;   /* warm off-white */
+  --page-horizontal-padding: 32px;
 }
 
 .cafe-section {
   color: var(--cafe-card-text-color);
+  padding: 32px calc(var(--page-horizontal-padding) + var(--tabWidth, 35px))
+    32px var(--page-horizontal-padding);
 }
 
 .cafe-section h1 {

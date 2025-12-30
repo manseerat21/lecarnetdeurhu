@@ -1,0 +1,34 @@
+/* componentsStyles/QuoteTicker.css */
+
+.quote-ticker {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  max-width: 360px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  pointer-events: none;
+  z-index: 999;
+  /* color + text-shadow are now set inline from active card */
+}
+
+.quote-text {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.quote-cursor {
+  margin-left: 2px;
+  animation: quote-cursor-blink 1s steps(2, start) infinite;
+}
+
+@keyframes quote-cursor-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
