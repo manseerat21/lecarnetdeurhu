@@ -1,4 +1,3 @@
-// src/components/FileStack.jsx
 import React, { useState } from "react";
 import "../componentsStyles/FileStack.css";
 
@@ -20,7 +19,7 @@ const LABELS = {
   urhu: "urhu",
 };
 
-function FileStack({ pages, onActiveChange }) {
+function FileStack({ pages, onActiveChange, onLabelClick }) {
   // initial order = order given by App
   const [order, setOrder] = useState(() => pages.map((p) => p.key));
 
@@ -30,12 +29,7 @@ function FileStack({ pages, onActiveChange }) {
     setOrder((prev) => {
       const without = prev.filter((k) => k !== key);
       const nextOrder = [...without, key];
-
-      // tell App which page is now on top
-      if (onActiveChange) {
-        onActiveChange(key);
-      }
-
+      onActiveChange?.(key);
       return nextOrder;
     });
   };
@@ -48,7 +42,6 @@ function FileStack({ pages, onActiveChange }) {
 
         const isFront = position === order.length - 1;
         const PageComponent = page.Component;
-
         const label = LABELS[key] ?? key;
         const tabOffset = TAB_OFFSETS[key] ?? "50%";
 
@@ -70,9 +63,18 @@ function FileStack({ pages, onActiveChange }) {
               <PageComponent />
             </div>
 
-            <div className="file-label">
+            <button
+              type="button"
+              className="file-label"
+              onClick={(e) => {
+                e.stopPropagation();           // don’t bubble to card click
+                bringToFront(key);             // still bring to front
+                onLabelClick?.(key);           // notify App (used to reseed café)
+              }}
+              aria-label={`${label} tab`}
+            >
               <span>{label}</span>
-            </div>
+            </button>
           </div>
         );
       })}

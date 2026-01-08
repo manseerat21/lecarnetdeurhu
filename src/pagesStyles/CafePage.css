@@ -1,159 +1,241 @@
-:root {
-  --cafe-card-color: #5b1c26;        /* deep maroon */
-  --cafe-card-text-color: #f9ebe3;   /* warm off-white */
-  --page-horizontal-padding: 32px;
+:root{
+  --cafe-card-color:#5b1c26;
+  --cafe-card-text-color:#f9ebe3;
+  --cafe-card-background:#5b1c26;
+  --page-horizontal-padding:32px;
+
+  --cream:#f9ebe3;
+  --ink:#1c0d07;
+
+  --glass-border: rgba(255,255,255,.55);
+  --glass-bg: rgba(255,255,255,.58);
+  --glass-dark-bg: rgba(0,0,0,.38);
+
+  --shadow-lg: 0 18px 34px rgba(0,0,0,.55);
+  --shadow-md: 0 12px 22px rgba(0,0,0,.45);
 }
 
-.cafe-section {
-  color: var(--cafe-card-text-color);
-  padding: 32px calc(var(--page-horizontal-padding) + var(--tabWidth, 35px))
-    32px var(--page-horizontal-padding);
+.cafe-section{
+  position:relative;
+  height:100%;
+  color:var(--cafe-card-text-color);
+  padding:32px calc(var(--page-horizontal-padding) + var(--tabWidth,35px))
+          32px var(--page-horizontal-padding);
+  overflow:hidden;
+  background:#000;
 }
 
-.cafe-section h1 {
-  text-transform: lowercase;
-  font-size: 1.7rem;
-  letter-spacing: 0.06em;
-  margin-bottom: 0.6rem;
+/* prevent thin “edge line” artifacts */
+.cafe-video-wrap{
+  position:absolute;
+  inset:-3px;            /* extend beyond edges */
+  z-index:0;
+  overflow:hidden;
+  background:#000;
+}
+.cafe-video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transform: scale(1.04); /* tiny zoom */
+  display:block;
+  filter: saturate(1.02) contrast(1.02);
 }
 
-.cafe-layout {
-  margin-top: 1.4rem;
-  border-radius: 1.2rem;
-  padding: 1rem;
+/* foreground layer */
+.cafe-layer{
+  position:relative;
+  z-index:1;
+  width:100%;
+  height:100%;
+}
+
+/* ---------- glass styles ---------- */
+.glass-light{
+  background: var(--glass-bg);
+  color:#2f2414;
+  border:1px solid var(--glass-border);
+  border-radius:14px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-lg);
+}
+
+.glass-dark{
+  background: var(--glass-dark-bg);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.35);
+  border-radius:14px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ---------- TOP RIGHT DOCK ---------- */
+.cafe-dock{
+  position: fixed;
+  top: 22px;
+  right: calc(var(--tabWidth, 35px) + 18px);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  z-index: 5;
+}
+
+/* plus button */
+.dock-add{
+  width: 40px;           /* smaller */
+  height: 40px;
+  border-radius: 12px;
   display: grid;
-  gap: 1rem;
-  background-size: cover;
-  background-position: center;
-  border: 1px solid rgba(0, 0, 0, 0.35);
-}
+  place-items: center;
 
-@media (min-width: 900px) {
-  .cafe-layout {
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  }
-}
-
-.cafe-ambient {
-  min-height: 190px;
-  border-radius: 1.1rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent),
-    rgba(9, 9, 12, 0.72);
-  padding: 1rem 1.1rem;
-}
-
-.ambient-title {
-  font-size: 0.85rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  opacity: 0.85;
-  margin-bottom: 0.4rem;
-}
-
-.ambient-body {
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: rgba(249, 235, 227, 0.9);
-}
-
-.cafe-small {
-  font-size: 0.8rem;
-  color: rgba(249, 235, 227, 0.75);
-}
-
-.cafe-widgets {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-/* sticky note */
-
-.sticky-note {
-  background: #f6e2a4;
-  color: #3a2c15;
-  border-radius: 0.9rem;
-  padding: 0.75rem 0.9rem;
-  box-shadow: 0 16px 26px rgba(0, 0, 0, 0.45);
-}
-
-.sticky-note h2 {
-  font-size: 0.95rem;
-  margin-bottom: 0.35rem;
-  text-transform: lowercase;
-}
-
-.sticky-note textarea {
-  width: 100%;
-  min-height: 90px;
-  border: none;
-  resize: vertical;
-  background: transparent;
-  font-family: inherit;
-  font-size: 0.9rem;
-  color: inherit;
-}
-
-.sticky-note textarea:focus {
-  outline: none;
-}
-
-.sticky-hint {
-  margin-top: 0.2rem;
-  font-size: 0.78rem;
-  opacity: 0.75;
-}
-
-/* pomodoro */
-
-.pomodoro {
-  background: rgba(9, 9, 13, 0.9);
-  border-radius: 0.9rem;
-  padding: 0.8rem 0.9rem;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-.pomodoro h2 {
-  font-size: 0.95rem;
-  margin-bottom: 0.4rem;
-  text-transform: lowercase;
-  color: #fbe6d5;
-}
-
-.pomodoro-time {
-  font-size: 1.9rem;
-  letter-spacing: 0.06em;
-  margin-bottom: 0.55rem;
-}
-
-.pomodoro-controls {
-  display: flex;
-  gap: 0.4rem;
-  margin-bottom: 0.3rem;
-}
-
-.pomodoro-controls button {
-  flex: 1;
-  border-radius: 999px;
-  border: none;
-  padding: 0.35rem 0.4rem;
-  font-size: 0.85rem;
+  border: 1px solid rgba(255,255,255,.35);
+  box-shadow: var(--shadow-lg);
   cursor: pointer;
-  text-transform: lowercase;
+
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+
+  padding: 0;
+  user-select: none;
+}
+.dock-add:hover{ filter: brightness(1.06); }
+.dock-add:active{ transform: translateY(1px); }
+
+/* optional hint when no videos */
+.cafe-hint{
+  position: fixed;
+  bottom: 22px;
+  left: 22px;
+  padding: 10px 12px;
+  font-size: 12px;
+  max-width: 420px;
+  opacity: 0.9;
 }
 
-.pomodoro-controls button:nth-child(1) {
-  background: #22c55e;
-  color: #02140a;
+/* ---------- sticky notes ---------- */
+.sticky{
+  position:absolute;
+  width: 200px;         /* square default */
+  min-height: 200px;
+  padding: 10px 10px 12px;
+  user-select:none;
 }
 
-.pomodoro-controls button:nth-child(2) {
-  background: #f97316;
-  color: #1b0c02;
+.sticky-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:6px;
+
+  cursor: grab;
+  touch-action:none;
+}
+.sticky-head:active{ cursor:grabbing; }
+
+.sticky-grip{
+  width: 38px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
 }
 
-.pomodoro-controls button:nth-child(3) {
-  background: #e5e7eb;
-  color: #111827;
+.icon-btn{
+  background: transparent;
+  border:none;
+  color:#fff;
+  font-size:18px;
+  width:26px;
+  height:26px;
+  line-height:26px;
+  border-radius:6px;
+  cursor:pointer;
+}
+.icon-btn:hover{ background: rgba(255,255,255,.10); }
+
+.sticky textarea{
+  width:100%;
+  min-height:150px;
+  border:none;
+  resize:vertical;
+  background:transparent;
+  font:inherit;
+  color:inherit;
+  line-height:1.55;
+}
+.sticky textarea:focus{ outline:none; }
+
+/* ---------- pomodoro ---------- */
+.pomo{
+  padding:12px 14px;
+  min-width: 260px;
+  user-select:none;
+}
+
+/* drag handle */
+.pomo-dragbar{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom: 6px;
+
+  cursor: grab;
+  user-select:none;
+  touch-action:none;
+}
+.pomo-dragbar:active{ cursor:grabbing; }
+
+.pomo-grip{
+  width: 42px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.pomo-time{
+  font-size: 2rem;
+  letter-spacing:.06em;
+  margin-bottom:10px;
+  text-shadow: 0 2px 6px rgba(0,0,0,.25);
+}
+
+.pomo-controls{
+  display:flex;
+  gap:8px;
+}
+
+.pomo-controls button{
+  flex:1;
+  border:none;
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:.86rem;
+  text-transform:lowercase;
+  cursor:pointer;
+  box-shadow: var(--shadow-md);
+}
+
+/* start / pause / reset */
+.btn-start{
+  background:#5b1c26;
+  color:#f9ebe3;
+}
+
+.btn-pause{
+  background:#f9ebe3;
+  color:#5b1c26;
+}
+
+/* transparent reset */
+.btn-reset{
+  background: transparent;
+  color: #f9ebe3;
+  border: 1px solid rgba(255,255,255,.38);
+  box-shadow: none;
+}
+.btn-reset:hover{
+  background: rgba(255,255,255,.08);
 }

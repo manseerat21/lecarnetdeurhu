@@ -1,98 +1,394 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "../pagesStyles/CafePage.css";
 
-function CafePage() {
-  const gradients = [
-    "linear-gradient(135deg, #20030a 0%, #4b111c 40%, #7a3b29 100%)",
-    "linear-gradient(135deg, #1a050c 0%, #53121f 40%, #8b3e2a 100%)",
-    "linear-gradient(135deg, #1b060e 0%, #5c1c2c 30%, #8a3b2b 100%)",
-  ];
+import { ref, listAll, getDownloadURL } from "firebase/storage";
+import { storage } from "../firebase";
 
-  const [bgIndex] = useState(() =>
-    Math.floor(Math.random() * gradients.length)
+/* ---------- localStorage keys ---------- */
+const LS_STICKIES = "cafe-stickies-v1";
+const LS_POMO = "cafe-pomo-v1";
+const LS_POMO_POS = "cafe-pomo-pos-v1";
+const LS_VIDEO_POOL = "cafe-video-pool-v1";
+const LS_VIDEO_CURRENT = "cafe-video-current-v1";
+
+const DEFAULT_POMO_SECONDS = 25 * 60;
+
+/* ---------- utils ---------- */
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function safeGetLS(key, fallback = "") {
+  try {
+    return localStorage.getItem(key) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+function safeSetLS(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // ignore
+  }
+}
+
+/* ---------- draggable hook ---------- */
+function useDraggable(lsKey, defaultPos, nodeRef) {
+  const [pos, setPos] = useState(() => {
+    try {
+      const raw = localStorage.getItem(lsKey);
+      if (!raw) return defaultPos;
+      const parsed = JSON.parse(raw);
+      if (typeof parsed?.x === "number" && typeof parsed?.y === "number") return parsed;
+    } catch {
+      // ignore
+    }
+    return defaultPos;
+  });
+
+  const startRef = useRef({ x: 0, y: 0, px: 0, py: 0 });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(lsKey, JSON.stringify(pos));
+    } catch {
+      // ignore
+    }
+  }, [lsKey, pos]);
+
+  const onPointerDown = useCallback(
+    (ev) => {
+      const el = nodeRef.current;
+      if (!el) return;
+
+      startRef.current = { x: ev.clientX, y: ev.clientY, px: pos.x, py: pos.y };
+
+      const onMove = (e) => {
+        setPos({
+          x: startRef.current.px + (e.clientX - startRef.current.x),
+          y: startRef.current.py + (e.clientY - startRef.current.y),
+        });
+      };
+
+      const onUp = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+      };
+
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    },
+    [nodeRef, pos.x, pos.y]
   );
 
-  const [sticky, setSticky] = useState(() => {
-    if (typeof window === "undefined") return "";
-    const saved = localStorage.getItem("cafe-sticky");
-    return saved ?? "";
+  return { pos, onPointerDown };
+}
+
+/* ---------- sticky notes ---------- */
+function useStickyNotes() {
+  const [notes, setNotes] = useState(() => {
+    try {
+      const raw = localStorage.getItem(LS_STICKIES);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {
-    localStorage.setItem("cafe-sticky", sticky);
-  }, [sticky]);
+    try {
+      localStorage.setItem(LS_STICKIES, JSON.stringify(notes));
+    } catch {
+      // ignore
+    }
+  }, [notes]);
 
-  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
-  const [running, setRunning] = useState(false);
+  const addNote = () => {
+    const id = crypto.randomUUID?.() ?? String(Date.now());
+    setNotes((n) => [
+      ...n,
+      { id, text: "", x: 40 + n.length * 18, y: 90 + n.length * 18 },
+    ]);
+  };
+
+  const deleteNote = (id) => setNotes((n) => n.filter((x) => x.id !== id));
+
+  const updateText = (id, text) =>
+    setNotes((n) => n.map((x) => (x.id === id ? { ...x, text } : x)));
+
+  const startDrag = (id) => (ev) => {
+    const note = notes.find((n) => n.id === id);
+    if (!note) return;
+
+    const start = { x: ev.clientX, y: ev.clientY, px: note.x, py: note.y };
+
+    const onMove = (e) => {
+      setNotes((ns) =>
+        ns.map((n) =>
+          n.id === id
+            ? { ...n, x: start.px + (e.clientX - start.x), y: start.py + (e.clientY - start.y) }
+            : n
+        )
+      );
+    };
+
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
+
+  return { notes, addNote, deleteNote, updateText, startDrag };
+}
+
+/* ---------- pomodoro ---------- */
+function usePomodoro() {
+  const init = () => {
+    try {
+      const raw = localStorage.getItem(LS_POMO);
+      if (!raw) return { remaining: DEFAULT_POMO_SECONDS, running: false };
+
+      const s = JSON.parse(raw);
+      let remaining = Number(s?.remainingSeconds ?? DEFAULT_POMO_SECONDS);
+
+      if (s?.running && Number.isFinite(s?.lastTickMs)) {
+        const elapsed = Math.floor((Date.now() - s.lastTickMs) / 1000);
+        remaining = Math.max(0, remaining - elapsed);
+      }
+
+      return { remaining, running: Boolean(s?.running && remaining > 0) };
+    } catch {
+      return { remaining: DEFAULT_POMO_SECONDS, running: false };
+    }
+  };
+
+  const [{ remaining, running }, setState] = useState(init);
 
   useEffect(() => {
     if (!running) return;
     const id = setInterval(() => {
-      setSecondsLeft((s) => (s > 0 ? s - 1 : 0));
+      setState((s) => ({
+        remaining: Math.max(0, s.remaining - 1),
+        running: s.remaining > 1,
+      }));
     }, 1000);
     return () => clearInterval(id);
   }, [running]);
 
-  const minutes = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
-  const seconds = String(secondsLeft % 60).padStart(2, "0");
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        LS_POMO,
+        JSON.stringify({
+          remainingSeconds: remaining,
+          running,
+          lastTickMs: Date.now(),
+        })
+      );
+    } catch {
+      // ignore
+    }
+  }, [remaining, running]);
 
-  function resetTimer() {
-    setSecondsLeft(25 * 60);
-    setRunning(false);
-  }
+  return {
+    minutes: String(Math.floor(remaining / 60)).padStart(2, "0"),
+    seconds: String(remaining % 60).padStart(2, "0"),
+    start: () => setState((s) => ({ ...s, running: true })),
+    pause: () => setState((s) => ({ ...s, running: false })),
+    reset: () => setState({ remaining: DEFAULT_POMO_SECONDS, running: false }),
+  };
+}
+
+/* ---------- page ---------- */
+function CafePage({ reseedNonce = 0 }) {
+  const [videoEntries, setVideoEntries] = useState([]); // [{id, url}]
+  const [loading, setLoading] = useState(true);
+
+  const [url, setUrl] = useState(() => safeGetLS(LS_VIDEO_CURRENT, ""));
+
+  // ✅ load from Firebase Storage folder: "cafe-wall/"
+  useEffect(() => {
+    let alive = true;
+
+    async function loadVideos() {
+      setLoading(true);
+      try {
+        const folderRef = ref(storage, "cafe-wall"); // IMPORTANT: your storage folder name
+        const res = await listAll(folderRef);
+
+        const items = await Promise.all(
+          res.items.map(async (itemRef) => {
+            const dl = await getDownloadURL(itemRef);
+            return { id: itemRef.fullPath, url: dl };
+          })
+        );
+
+        if (!alive) return;
+        setVideoEntries(items);
+
+        // if no current URL saved (or it’s stale), pick one after load
+        if (!safeGetLS(LS_VIDEO_CURRENT, "") && items.length) {
+          const first = items[0].url;
+          safeSetLS(LS_VIDEO_CURRENT, first);
+          setUrl(first);
+        }
+      } catch (err) {
+        console.error("Failed to load cafe-wall videos:", err);
+        if (alive) setVideoEntries([]);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    }
+
+    loadVideos();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const allIds = useMemo(() => videoEntries.map((v) => v.id), [videoEntries]);
+
+  const pickNextVideo = useCallback(() => {
+    if (!videoEntries.length) return;
+
+    let pool = [];
+    try {
+      const raw = localStorage.getItem(LS_VIDEO_POOL);
+      pool = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(pool)) pool = [];
+    } catch {
+      pool = [];
+    }
+
+    pool = pool.filter((id) => allIds.includes(id));
+    if (!pool.length) pool = shuffle(allIds);
+
+    const nextId = pool.shift();
+    const next = videoEntries.find((v) => v.id === nextId) || videoEntries[0];
+
+    safeSetLS(LS_VIDEO_POOL, JSON.stringify(pool));
+    safeSetLS(LS_VIDEO_CURRENT, next.url);
+    setUrl(next.url);
+  }, [videoEntries, allIds]);
+
+  // ✅ FIX: defer reseed so React doesn’t complain about sync setState inside effect
+  useEffect(() => {
+    if (reseedNonce <= 0) return;
+    const raf = requestAnimationFrame(() => {
+      pickNextVideo();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [reseedNonce, pickNextVideo]);
+
+  const videoRef = useRef(null);
+  useEffect(() => {
+    if (!url) return;
+    videoRef.current?.play?.().catch(() => {});
+  }, [url]);
+
+  const pomo = usePomodoro();
+  const stickies = useStickyNotes();
+
+  const pomoRef = useRef(null);
+  const pomoDrag = useDraggable(LS_POMO_POS, { x: 0, y: 0 }, pomoRef);
 
   return (
     <section className="cafe-section">
-      <header>
-        <h1>café</h1>
-        <p className="section-intro">
-          my little study café. later versions will play loops from a folder of
-          café clips; for now it&apos;s gradients, a desk note, and a very small
-          timer.
-        </p>
-      </header>
+      <div className="cafe-video-wrap" aria-hidden="true">
+        {url ? (
+          <video
+            ref={videoRef}
+            className="cafe-video"
+            src={url}
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        ) : null}
+      </div>
 
-      <div
-        className="cafe-layout"
-        style={{ backgroundImage: gradients[bgIndex] }}
-      >
-        <div className="cafe-ambient">
-          <p className="ambient-title">ambient screen</p>
-          <p className="ambient-body">
-            v0 • no video yet, just colours. imagine quiet clinking cups and a
-            rainy window two tables away.
-          </p>
+      <div className="cafe-layer">
+        <div className="cafe-dock">
+          <div
+            ref={pomoRef}
+            className="pomo glass-dark"
+            style={{
+              transform: `translate(${pomoDrag.pos.x}px, ${pomoDrag.pos.y}px)`,
+            }}
+          >
+            <div className="pomo-dragbar" onPointerDown={pomoDrag.onPointerDown}>
+              <div className="pomo-grip" />
+            </div>
+
+            <div className="pomo-time">
+              {pomo.minutes}:{pomo.seconds}
+            </div>
+
+            <div className="pomo-controls">
+              <button className="btn-start" onClick={pomo.start}>
+                start
+              </button>
+              <button className="btn-pause" onClick={pomo.pause}>
+                pause
+              </button>
+              <button className="btn-reset" onClick={pomo.reset}>
+                reset
+              </button>
+            </div>
+          </div>
+
+          <button
+            className="dock-add glass-dark"
+            onClick={stickies.addNote}
+            aria-label="add note"
+            type="button"
+          >
+            +
+          </button>
         </div>
 
-        <div className="cafe-widgets">
-          <div className="sticky-note">
-            <h2>desk note</h2>
+        {stickies.notes.map((n) => (
+          <div
+            key={n.id}
+            className="sticky glass-dark"
+            style={{ transform: `translate(${n.x}px, ${n.y}px)` }}
+          >
+            <div className="sticky-head" onPointerDown={stickies.startDrag(n.id)}>
+              <div className="sticky-grip" />
+              <button
+                className="icon-btn icon-btn--light"
+                onClick={() => stickies.deleteNote(n.id)}
+                aria-label="delete note"
+                type="button"
+              >
+                ×
+              </button>
+            </div>
+
             <textarea
-              value={sticky}
-              onChange={(e) => setSticky(e.target.value)}
-              placeholder="what are you working on in this session?"
+              value={n.text}
+              onChange={(e) => stickies.updateText(n.id, e.target.value)}
+              placeholder={loading ? "loading videos…" : "write something small…"}
             />
-            <p className="sticky-hint">
-              saved in this browser only. clear it when you finish a chapter.
-            </p>
           </div>
+        ))}
 
-          <div className="pomodoro">
-            <h2>pomodoro</h2>
-            <div className="pomodoro-time">
-              {minutes}:{seconds}
-            </div>
-            <div className="pomodoro-controls">
-              <button onClick={() => setRunning(true)}>start</button>
-              <button onClick={() => setRunning(false)}>pause</button>
-              <button onClick={resetTimer}>reset</button>
-            </div>
-            <p className="cafe-small">
-              one focused 25-minute block. v1 might add long-break cycles and
-              tiny sounds.
-            </p>
+        {!loading && videoEntries.length === 0 ? (
+          <div style={{ position: "absolute", bottom: 20, left: 20, opacity: 0.9 }}>
+            No videos found in Firebase Storage folder: <b>cafe-wall/</b>
           </div>
-        </div>
+        ) : null}
       </div>
     </section>
   );
