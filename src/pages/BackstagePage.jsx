@@ -43,6 +43,14 @@ function BackstagePage() {
 
   const [now, setNow] = useState(() => new Date());
 
+  // ✅ Vite base path safe for GitHub Pages (e.g. "/lecarnetdeurhu/")
+  const BASE = import.meta.env.BASE_URL || "/";
+
+  const goHome = () => {
+    // Always go to the deployed app root, not the domain root
+    window.location.href = BASE;
+  };
+
   // --------- AUTH ---------
 
   useEffect(() => {
@@ -98,7 +106,6 @@ function BackstagePage() {
 
   // --------- OWNER SUBSCRIPTIONS ---------
 
-  // messages (newest first)
   useEffect(() => {
     if (!isOwner) return;
 
@@ -208,12 +215,10 @@ function BackstagePage() {
     const valid = ["today", "cafe", "moon", "urhu"];
     if (!valid.includes(key)) return;
 
-    const basePath = window.location.pathname.replace(/\/_edit\/?$/, "/");
-
+    // Always navigate via BASE (works even from /_edit)
     const params = new URLSearchParams();
     params.set("page", key);
-
-    window.location.href = `${basePath}?${params.toString()}`;
+    window.location.href = `${BASE}?${params.toString()}`;
   };
 
   // --------- GATE SCREENS ---------
@@ -257,16 +262,10 @@ function BackstagePage() {
             </div>
 
             <div className="win-buttons">
-              <button
-                className="win-btn win-btn--primary"
-                onClick={handleSignIn}
-              >
+              <button className="win-btn win-btn--primary" onClick={handleSignIn}>
                 yes, that&apos;s me
               </button>
-              <button
-                className="win-btn"
-                onClick={() => (window.location.href = "/")}
-              >
+              <button className="win-btn" onClick={goHome}>
                 not today
               </button>
             </div>
@@ -288,21 +287,15 @@ function BackstagePage() {
 
           <div className="win-body">
             <p className="win-message">
-              hi {user.displayName || user.email}. this backstage room only
-              unlocks for <span className="win-highlight">urhu</span>.
+              hi {user.displayName || user.email}. this backstage room only unlocks
+              for <span className="win-highlight">urhu</span>.
             </p>
 
             <div className="win-buttons">
-              <button
-                className="win-btn win-btn--primary"
-                onClick={handleSignOut}
-              >
+              <button className="win-btn win-btn--primary" onClick={handleSignOut}>
                 switch github account
               </button>
-              <button
-                className="win-btn"
-                onClick={() => (window.location.href = "/")}
-              >
+              <button className="win-btn" onClick={goHome}>
                 go back home
               </button>
             </div>
@@ -316,14 +309,7 @@ function BackstagePage() {
 
   return (
     <div className="backstage-root backstage-root--owner">
-      <video
-        className="backstage-video"
-        autoPlay
-        muted
-        loop
-        playsInline
-        src={backstageVideo}
-      />
+      <video className="backstage-video" autoPlay muted loop playsInline src={backstageVideo} />
 
       <div className="backstage-owner-shell">
         {/* COLUMN 1: meta / time / track list */}
@@ -364,10 +350,7 @@ function BackstagePage() {
         <section className="owner-col owner-col--uploads">
           <div className="owner-col2-top">
             {/* images */}
-            <form
-              className="owner-panel owner-panel--images"
-              onSubmit={handleImageSubmit}
-            >
+            <form className="owner-panel owner-panel--images" onSubmit={handleImageSubmit}>
               <h2 className="owner-panel-title">postcard images</h2>
               <p className="owner-panel-caption">
                 choose a board and drop files. they&apos;ll float to the moon.
@@ -386,35 +369,23 @@ function BackstagePage() {
               <div className="owner-file-row">
                 <label className="file-input-faux">
                   <span>choose images…</span>
-                  <input
-                    type="file"
-                    multiple
-                    onChange={handleImageFilesChange}
-                  />
+                  <input type="file" multiple onChange={handleImageFilesChange} />
                 </label>
                 <span className="file-input-hint">
                   {imageFiles.length === 0
                     ? "no files selected"
-                    : `${imageFiles.length} file${
-                        imageFiles.length > 1 ? "s" : ""
-                      } ready`}
+                    : `${imageFiles.length} file${imageFiles.length > 1 ? "s" : ""} ready`}
                 </span>
               </div>
 
               <div className="owner-panel-footer">
-                <button
-                  type="submit"
-                  className="owner-btn owner-btn--primary"
-                  disabled={uploadBusy}
-                >
+                <button type="submit" className="owner-btn owner-btn--primary" disabled={uploadBusy}>
                   {uploadBusy ? "uploading…" : "upload"}
                 </button>
                 <button
                   type="button"
                   className="owner-btn owner-btn--ghost"
-                  onClick={() =>
-                    alert("edit view coming in a later version.")
-                  }
+                  onClick={() => alert("edit view coming in a later version.")}
                 >
                   edit boards
                 </button>
@@ -422,10 +393,7 @@ function BackstagePage() {
             </form>
 
             {/* poems / letters */}
-            <form
-              className="owner-panel owner-panel--poems"
-              onSubmit={handlePoemSubmit}
-            >
+            <form className="owner-panel owner-panel--poems" onSubmit={handlePoemSubmit}>
               <h2 className="owner-panel-title">letters / poems</h2>
               <p className="owner-panel-caption">
                 drafts for the letters page. folder acts like an album.
@@ -451,18 +419,13 @@ function BackstagePage() {
               </div>
 
               <div className="owner-panel-footer">
-                <button
-                  type="submit"
-                  className="owner-btn owner-btn--primary"
-                >
+                <button type="submit" className="owner-btn owner-btn--primary">
                   save draft
                 </button>
                 <button
                   type="button"
                   className="owner-btn owner-btn--ghost"
-                  onClick={() =>
-                    alert("edit / delete drafts comes in a later version.")
-                  }
+                  onClick={() => alert("edit / delete drafts comes in a later version.")}
                 >
                   edit drafts
                 </button>
@@ -474,14 +437,9 @@ function BackstagePage() {
         {/* COLUMN 3: quotes + messages */}
         <section className="owner-col owner-col--right">
           {/* quotes */}
-          <form
-            className="owner-panel owner-panel--quotes"
-            onSubmit={handleQuoteSubmit}
-          >
+          <form className="owner-panel owner-panel--quotes" onSubmit={handleQuoteSubmit}>
             <h2 className="owner-panel-title">ticker quotes</h2>
-            <p className="owner-panel-caption">
-              lines that cycle in the corner of the front page.
-            </p>
+            <p className="owner-panel-caption">lines that cycle in the corner of the front page.</p>
 
             <div className="owner-field-row">
               <textarea
@@ -493,18 +451,13 @@ function BackstagePage() {
             </div>
 
             <div className="owner-panel-footer">
-              <button
-                type="submit"
-                className="owner-btn owner-btn--primary"
-              >
+              <button type="submit" className="owner-btn owner-btn--primary">
                 queue quote
               </button>
               <button
                 type="button"
                 className="owner-btn owner-btn--ghost"
-                onClick={() =>
-                  alert("quote management table is a future version.")
-                }
+                onClick={() => alert("quote management table is a future version.")}
               >
                 edit quotes
               </button>
@@ -514,16 +467,12 @@ function BackstagePage() {
           {/* messages reel */}
           <header className="owner-section-header owner-section-header--right">
             <span className="owner-section-label">messages to check</span>
-            <span className="owner-section-sub">
-              private log from the note card
-            </span>
+            <span className="owner-section-sub">private log from the note card</span>
           </header>
 
           <div className="messages-reel">
             {messages.length === 0 ? (
-              <p className="messages-empty">
-                no messages archived yet. the reel waits for first frame.
-              </p>
+              <p className="messages-empty">no messages archived yet. the reel waits for first frame.</p>
             ) : (
               <ul className="messages-list">
                 {messages.map((m) => (
@@ -532,14 +481,12 @@ function BackstagePage() {
                     {m.createdAt && (
                       <p className="message-meta">
                         {m.createdAt.toDate
-                          ? m.createdAt
-                              .toDate()
-                              .toLocaleString("en-CA", {
-                                month: "short",
-                                day: "2-digit",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
+                          ? m.createdAt.toDate().toLocaleString("en-CA", {
+                              month: "short",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
                           : ""}
                       </p>
                     )}
