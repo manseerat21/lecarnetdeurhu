@@ -1,0 +1,1 @@
+import{j as e,N as r}from"./index-D92yy_8C.js";function o({nodeTitle:t,nodeSlug:i,threads:s,onBack:a,onOpenThread:n}){return e.jsx(r,{title:t,subtitle:i,threads:s,onBack:a,onOpenThread:n,children:e.jsx("div",{className:"learningCard",children:"this page is custom. design anything here later."})})}export{o as default};
