@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting…</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (function () {
+        // Keep the GitHub Pages repo base path (e.g. /lecarnetdeurhu/)
+        var base = window.location.pathname.split("/").slice(0, 2).join("/") + "/";
+
+        // Preserve the full path after the base, plus query + hash
+        var fullPath = window.location.pathname; // e.g. /lecarnetdeurhu/_edit
+        var route = fullPath.startsWith(base) ? fullPath.slice(base.length - 1) : fullPath; // e.g. /_edit
+
+        var query = window.location.search ? window.location.search.slice(1) : "";
+        var hash = window.location.hash || "";
+
+        // Redirect to index.html with p (path) + q (query)
+        var target =
+          base +
+          "?p=" +
+          encodeURIComponent(route) +
+          "&q=" +
+          encodeURIComponent(query) +
+          hash;
+
+        window.location.replace(target);
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
