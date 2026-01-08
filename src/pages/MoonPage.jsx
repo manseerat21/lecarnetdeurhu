@@ -5,8 +5,6 @@ import "../pagesStyles/MoonPage.css";
 import { db } from "../firebase";
 import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 
-import moonWallpaper from "../assets/moon-wallpaper.gif";
-
 function MoonPage() {
   const [boards, setBoards] = useState([]);
   const [letters, setLetters] = useState([]);
@@ -25,6 +23,7 @@ function MoonPage() {
         snap.forEach((doc) => {
           const data = doc.data();
           if (!data.board || !data.url) return;
+
           if (!map.has(data.board)) map.set(data.board, []);
           const arr = map.get(data.board);
           if (arr.length < 6) arr.push({ id: doc.id, url: data.url });
@@ -74,13 +73,7 @@ function MoonPage() {
 
   return (
     <section className="moon-section">
-      <div
-        className="moon-wallpaper"
-        style={{ backgroundImage: `url(${moonWallpaper})` }}
-      />
-
-      {/* full-height overlay so the “blur line” does NOT stop early */}
-      <div className="moon-overlay" />
+      {/* background + overlay handled purely in CSS */}
 
       <div className="moon-inner">
         <header className="moon-header">

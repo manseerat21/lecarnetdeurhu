@@ -1,8 +1,9 @@
+/* src/pagesStyles/MoonPage.css */
 :root{
   --moon-card-color: #050814;
   --moon-card-text-color: #e5f0ff;
 
-  /* FileStack will use this as background for the card */
+  /* FileStack can use this for the card background if it reads it */
   --moon-card-background: url("../assets/moon-wallpaper.gif");
 
   --page-horizontal-padding: 32px;
@@ -15,6 +16,12 @@
   padding: 32px calc(var(--page-horizontal-padding) + var(--tabWidth, 35px))
     36px var(--page-horizontal-padding);
   overflow: hidden;
+
+  /* ✅ page background handled in CSS */
+  background-image: var(--moon-card-background);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* FULL-CARD overlay/tint so it never ends early */
@@ -23,11 +30,6 @@
   position:absolute;
   inset:0;
   pointer-events:none;
-  background:
-    radial-gradient(circle at 28% 20%, rgba(120, 165, 255, 0.22), transparent 45%),
-    radial-gradient(circle at 70% 35%, rgba(140, 190, 255, 0.18), transparent 52%),
-    linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0.85));
-  backdrop-filter: blur(6px);
   z-index: 0;
 }
 
