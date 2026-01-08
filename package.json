@@ -1,7 +1,8 @@
 {
   "name": "lecarnetdeurhu",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.2.2",
+  "homepage": "https://manseerat21.github.io/lecarnetdeurhu/",
   "type": "module",
   "scripts": {
     "dev": "vite",

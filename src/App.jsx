@@ -28,8 +28,47 @@ function buildPagesOrder(initialKey) {
   return [...rest, chosen];
 }
 
-function App() {
+/**
+ * GitHub Pages SPA fallback:
+ * - 404.html redirects to: /<repo>/?p=/_edit&q=page=cafe
+ * - We restore the real URL and query once React loads.
+ */
+function getEffectiveLocation() {
+  const base = import.meta.env.BASE_URL || "/"; // e.g. "/lecarnetdeurhu/"
+  const baseNoSlash = base.endsWith("/") ? base.slice(0, -1) : base;
+
+  const sp = new URLSearchParams(window.location.search);
+  const redirectedPath = sp.get("p"); // like "/_edit"
+  const redirectedQuery = sp.get("q"); // like "page=today"
+
+  // If we came from 404 redirect, rewrite URL back to the intended path (nice URLs)
+  if (redirectedPath != null) {
+    const q = redirectedQuery ? `?${redirectedQuery}` : "";
+    const niceUrl = `${baseNoSlash}${redirectedPath}${q}${window.location.hash || ""}`;
+
+    // Replace only once (prevents loops)
+    window.history.replaceState(null, "", niceUrl);
+  }
+
+  // After possible replacement, compute route relative to base
+  const pathname = window.location.pathname || "/";
+  let route = pathname;
+
+  if (baseNoSlash !== "/" && route.startsWith(baseNoSlash)) {
+    route = route.slice(baseNoSlash.length); // "/_edit" or "/"
+    if (!route.startsWith("/")) route = "/" + route;
+  }
+
   const params = new URLSearchParams(window.location.search);
+  return { route, params };
+}
+
+function App() {
+  const { route, params } = getEffectiveLocation();
+
+  const isEditPage = route === "/_edit" || route === "/_edit/";
+
+  // keep your original ?page= behavior
   const initialKey = params.get("page");
 
   const basePages = useMemo(() => buildPagesOrder(initialKey), [initialKey]);
@@ -44,7 +83,6 @@ function App() {
   // reseed nonce for café background – increments ONLY when the café label is clicked
   const [cafeReseedNonce, setCafeReseedNonce] = useState(0);
 
-  // ✅ IMPORTANT: hooks must run every render. build `pages` BEFORE any early return.
   const pages = useMemo(
     () =>
       basePages.map((p) =>
@@ -54,9 +92,6 @@ function App() {
       ),
     [basePages, cafeReseedNonce]
   );
-
-  const pathname = window.location.pathname || "";
-  const isEditPage = pathname.endsWith("/_edit") || pathname.endsWith("/_edit/");
 
   if (isEditPage) {
     return (
@@ -73,7 +108,7 @@ function App() {
         onActiveChange={setActivePage}
         onLabelClick={(key) => {
           if (key === "cafe" && activePage === "cafe") {
-            setCafeReseedNonce((n) => n + 1); // change video only on café-label clicks
+            setCafeReseedNonce((n) => n + 1);
           }
         }}
       />
